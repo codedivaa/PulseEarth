@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef } from 'react'
 import dynamic from 'next/dynamic'
 import { AnimatePresence, motion } from 'framer-motion'
 import SidebarPanel from '@/components/Sidebar/SidebarPanel'
@@ -29,18 +29,25 @@ export default function AppShell() {
   // Compare mode
   const [compareEntity, setCompareEntity] = useState<SelectedEntity | null>(null)
   const [isComparing,   setIsComparing]   = useState(false)
+  // Ref keeps the current isComparing value readable inside stable callbacks
+  // without re-creating handleEntitySelect on every toggle (fixes stale closure
+  // where globe clicks would see isComparing=false even after startCompare fired)
+  const isComparingRef = useRef(false)
 
   const handleLoaded = useCallback(() => setIsLoaded(true), [])
 
   const handleEntitySelect = useCallback((entity: SelectedEntity | null) => {
-    if (isComparing && entity && entity.type !== 'city') {
+    if (isComparingRef.current && entity && entity.type !== 'city') {
       setCompareEntity(entity)
       setIsComparing(false)
+      isComparingRef.current = false
     } else {
       setSelectedEntity(entity)
       setCompareEntity(null)
+      setIsComparing(false)
+      isComparingRef.current = false
     }
-  }, [isComparing])
+  }, []) // stable — reads isComparing via ref, not closure
 
   const handleSearchSelect = useCallback((lat: number, lng: number, entity: SelectedEntity) => {
     setFlyTo({ lat, lng, altitude: 1.8 })
@@ -51,9 +58,22 @@ export default function AppShell() {
     setLayers(prev => ({ ...prev, [key]: !prev[key] }))
   }, [])
 
-  const startCompare = useCallback(() => { setIsComparing(true); setCompareEntity(null) }, [])
-  const closeCompare = useCallback(() => { setCompareEntity(null); setIsComparing(false) }, [])
-  const closeSidebar = useCallback(() => { setSelectedEntity(null); setCompareEntity(null); setIsComparing(false) }, [])
+  const startCompare = useCallback(() => {
+    setIsComparing(true)
+    isComparingRef.current = true
+    setCompareEntity(null)
+  }, [])
+  const closeCompare = useCallback(() => {
+    setCompareEntity(null)
+    setIsComparing(false)
+    isComparingRef.current = false
+  }, [])
+  const closeSidebar = useCallback(() => {
+    setSelectedEntity(null)
+    setCompareEntity(null)
+    setIsComparing(false)
+    isComparingRef.current = false
+  }, [])
 
   const handleDemoSelect = useCallback((entity: SelectedEntity, lat: number, lng: number, altitude: number) => {
     setFlyTo({ lat, lng, altitude })
@@ -77,7 +97,7 @@ export default function AppShell() {
           <div className="absolute top-16 left-1/2 -translate-x-1/2 z-40 glass border border-[#FFD166]/20 rounded-full px-5 py-2 flex items-center gap-3 shadow-xl">
             <div className="w-2 h-2 rounded-full bg-[#FFD166] animate-pulse" />
             <span className="text-[12px] text-[#FFD166]/75">Click or search a country to compare</span>
-            <button onClick={() => setIsComparing(false)} className="text-white/30 hover:text-white/60 ml-1 text-sm">×</button>
+            <button onClick={closeCompare} className="text-white/30 hover:text-white/60 ml-1 text-sm">×</button>
           </div>
         )}
       </AnimatePresence>
@@ -133,10 +153,10 @@ export default function AppShell() {
 
             <NewsAnchor selectedEntity={selectedEntity} />
 
-            <AnimatePresence mode="wait">
+            <AnimatePresence>
               {selectedEntity && (
                 <SidebarPanel
-                  key={selectedEntity.id + (compareEntity?.id ?? '')}
+                  key={selectedEntity.id}
                   entity={selectedEntity}
                   compareEntity={compareEntity}
                   onClose={closeSidebar}
