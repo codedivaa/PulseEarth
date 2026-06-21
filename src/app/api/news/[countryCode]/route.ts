@@ -34,71 +34,76 @@ const NAMES: Record<string, string> = {
   ZW: 'Zimbabwe', TN: 'Tunisia', SN: 'Senegal', CI: 'Ivory Coast',
 }
 
-// Country-specific Google News search queries — simple and effective
+// Country-specific Google News search queries — no year so results are always current
 const COUNTRY_QUERIES: Record<string, string> = {
-  IN: 'India economy GDP RBI finance inflation 2025',
-  AE: 'UAE economy Dubai Abu Dhabi GDP trade finance 2025',
-  SG: 'Singapore economy MAS GDP trade finance 2025',
-  AU: 'Australia economy RBA GDP trade finance 2025',
-  MY: 'Malaysia economy Bank Negara GDP trade finance 2025',
-  GB: 'UK economy Bank of England GDP sterling finance 2025',
-  JP: 'Japan economy Bank of Japan GDP yen finance 2025',
-  KR: 'South Korea economy GDP Bank of Korea finance 2025',
-  DE: 'Germany economy Bundesbank GDP DAX finance 2025',
-  FR: 'France economy GDP ECB euro finance 2025',
-  CN: 'China economy PBOC GDP yuan finance 2025',
-  BR: 'Brazil economy GDP real finance inflation 2025',
-  SA: 'Saudi Arabia economy oil GDP Vision 2030 finance 2025',
-  NG: 'Nigeria economy naira GDP CBN finance 2025',
-  ZA: 'South Africa economy GDP rand SARB finance 2025',
-  KE: 'Kenya economy shilling GDP finance 2025',
-  GH: 'Ghana economy cedi GDP IMF finance 2025',
-  EG: 'Egypt economy pound GDP IMF finance 2025',
-  PK: 'Pakistan economy rupee GDP IMF finance 2025',
-  BD: 'Bangladesh economy taka GDP garments finance 2025',
-  TR: 'Turkey economy lira GDP inflation finance 2025',
-  ID: 'Indonesia economy rupiah GDP finance 2025',
-  TH: 'Thailand economy baht GDP finance 2025',
-  VN: 'Vietnam economy dong GDP manufacturing trade 2025',
-  PH: 'Philippines economy peso GDP BSP finance 2025',
-  MX: 'Mexico economy peso Banxico GDP finance 2025',
-  AR: 'Argentina economy peso GDP inflation IMF 2025',
-  CL: 'Chile economy peso copper GDP finance 2025',
-  CO: 'Colombia economy peso GDP finance 2025',
-  PE: 'Peru economy sol copper GDP finance 2025',
-  IL: 'Israel economy shekel GDP tech finance 2025',
-  QA: 'Qatar economy LNG GDP finance 2025',
-  KW: 'Kuwait economy dinar oil GDP finance 2025',
-  OM: 'Oman economy riyal oil GDP finance 2025',
-  RU: 'Russia economy ruble GDP sanctions finance 2025',
-  UA: 'Ukraine economy hryvnia GDP reconstruction 2025',
-  KZ: 'Kazakhstan economy tenge GDP finance 2025',
-  LK: 'Sri Lanka economy rupee GDP IMF 2025',
-  NL: 'Netherlands economy euro GDP finance trade 2025',
-  CH: 'Switzerland economy franc GDP finance 2025',
-  SE: 'Sweden economy krona GDP finance 2025',
-  NO: 'Norway economy krone oil GDP finance 2025',
-  DK: 'Denmark economy krone GDP finance 2025',
-  FI: 'Finland economy euro GDP finance 2025',
-  PL: 'Poland economy zloty GDP finance 2025',
-  IT: 'Italy economy euro GDP finance ECB 2025',
-  ES: 'Spain economy euro GDP finance ECB 2025',
-  GR: 'Greece economy euro GDP finance 2025',
-  PT: 'Portugal economy euro GDP finance 2025',
-  BE: 'Belgium economy euro GDP finance 2025',
-  AT: 'Austria economy euro GDP finance 2025',
-  NZ: 'New Zealand economy RBNZ GDP finance 2025',
-  IR: 'Iran economy rial GDP sanctions finance 2025',
-  IQ: 'Iraq economy dinar oil GDP finance 2025',
-  MA: 'Morocco economy dirham GDP finance 2025',
-  ET: 'Ethiopia economy birr GDP finance 2025',
-  TZ: 'Tanzania economy shilling GDP finance 2025',
-  TN: 'Tunisia economy dinar GDP finance 2025',
-  SN: 'Senegal economy CFA franc GDP finance 2025',
-  CI: 'Ivory Coast economy CFA franc GDP finance 2025',
-  MM: 'Myanmar economy kyat GDP finance 2025',
-  NP: 'Nepal economy rupee GDP finance 2025',
-  ZW: 'Zimbabwe economy dollar GDP finance 2025',
+  IN: 'India economy GDP RBI finance inflation',
+  AE: 'UAE economy Dubai Abu Dhabi GDP trade finance',
+  SG: 'Singapore economy MAS GDP trade finance',
+  AU: 'Australia economy RBA GDP trade finance',
+  MY: 'Malaysia economy Bank Negara GDP trade finance',
+  GB: 'UK economy Bank of England GDP sterling finance',
+  JP: 'Japan economy Bank of Japan GDP yen finance',
+  KR: 'South Korea economy GDP Bank of Korea finance',
+  DE: 'Germany economy Bundesbank GDP DAX finance',
+  FR: 'France economy GDP ECB euro finance',
+  CN: 'China economy PBOC GDP yuan finance',
+  BR: 'Brazil economy GDP real finance inflation',
+  SA: 'Saudi Arabia economy oil GDP Vision 2030 finance',
+  NG: 'Nigeria economy naira GDP CBN finance',
+  ZA: 'South Africa economy GDP rand SARB finance',
+  KE: 'Kenya economy shilling GDP finance',
+  GH: 'Ghana economy cedi GDP IMF finance',
+  EG: 'Egypt economy pound GDP IMF finance',
+  PK: 'Pakistan economy rupee GDP IMF finance',
+  BD: 'Bangladesh economy taka GDP garments finance',
+  TR: 'Turkey economy lira GDP inflation finance',
+  ID: 'Indonesia economy rupiah GDP finance',
+  TH: 'Thailand economy baht GDP finance',
+  VN: 'Vietnam economy dong GDP manufacturing trade',
+  PH: 'Philippines economy peso GDP BSP finance',
+  MX: 'Mexico economy peso Banxico GDP finance',
+  AR: 'Argentina economy peso GDP inflation IMF',
+  CL: 'Chile economy peso copper GDP finance',
+  CO: 'Colombia economy peso GDP finance',
+  PE: 'Peru economy sol copper GDP finance',
+  IL: 'Israel economy shekel GDP tech finance',
+  QA: 'Qatar economy LNG GDP finance',
+  KW: 'Kuwait economy dinar oil GDP finance',
+  OM: 'Oman economy riyal oil GDP finance',
+  RU: 'Russia economy ruble GDP sanctions finance',
+  UA: 'Ukraine economy hryvnia GDP reconstruction',
+  KZ: 'Kazakhstan economy tenge GDP finance',
+  LK: 'Sri Lanka economy rupee GDP IMF',
+  NL: 'Netherlands economy euro GDP finance trade',
+  CH: 'Switzerland economy franc GDP finance',
+  SE: 'Sweden economy krona GDP finance',
+  NO: 'Norway economy krone oil GDP finance',
+  DK: 'Denmark economy krone GDP finance',
+  FI: 'Finland economy euro GDP finance',
+  PL: 'Poland economy zloty GDP finance',
+  IT: 'Italy economy euro GDP finance ECB',
+  ES: 'Spain economy euro GDP finance ECB',
+  GR: 'Greece economy euro GDP finance',
+  PT: 'Portugal economy euro GDP finance',
+  BE: 'Belgium economy euro GDP finance',
+  AT: 'Austria economy euro GDP finance',
+  NZ: 'New Zealand economy RBNZ GDP finance',
+  IR: 'Iran economy rial GDP sanctions finance',
+  IQ: 'Iraq economy dinar oil GDP finance',
+  MA: 'Morocco economy dirham GDP finance',
+  ET: 'Ethiopia economy birr GDP finance',
+  TZ: 'Tanzania economy shilling GDP finance',
+  TN: 'Tunisia economy dinar GDP finance',
+  SN: 'Senegal economy CFA franc GDP finance',
+  CI: 'Ivory Coast economy CFA franc GDP finance',
+  MM: 'Myanmar economy kyat GDP finance',
+  NP: 'Nepal economy rupee GDP finance',
+  ZW: 'Zimbabwe economy dollar GDP finance',
+  US: 'United States economy Federal Reserve GDP inflation finance',
+  CA: 'Canada economy Bank of Canada GDP loonie finance',
+  RO: 'Romania economy leu GDP finance',
+  HU: 'Hungary economy forint GDP finance',
+  CZ: 'Czech Republic economy koruna GDP finance',
 }
 
 // Country-specific RSS feeds — tried alongside standard sources
@@ -283,11 +288,13 @@ async function tryFetch(url: string, timeoutMs = 8000): Promise<string | null> {
   try {
     const res = await fetch(url, {
       signal: AbortSignal.timeout(timeoutMs),
+      cache: 'no-store',   // bypass Next.js data cache — always fetch fresh RSS
       headers: {
         'User-Agent': CHROME_UA,
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
         'Accept-Language': 'en-US,en;q=0.9',
         'Cache-Control': 'no-cache',
+        'Pragma': 'no-cache',
       },
     })
     if (!res.ok) return null
@@ -296,8 +303,10 @@ async function tryFetch(url: string, timeoutMs = 8000): Promise<string | null> {
   } catch { return null }
 }
 
-async function fetchGoogleNews(query: string): Promise<NewsArticle[]> {
-  const q = encodeURIComponent(query)
+// when:Xd tells Google News to only return articles published in the last X days.
+// Without this, Google returns cached/archived results that can be weeks old.
+async function fetchGoogleNews(query: string, withinDays = 3): Promise<NewsArticle[]> {
+  const q = encodeURIComponent(`${query} when:${withinDays}d`)
   const xml = await tryFetch(`https://news.google.com/rss/search?q=${q}&hl=en-US&gl=US&ceid=US:en`)
   return xml ? parseRss(xml) : []
 }
@@ -341,6 +350,8 @@ async function fetchExtraFeeds(code: string, name: string): Promise<NewsArticle[
   for (const r of results) {
     if (r.status !== 'fulfilled' || !r.value) continue
     for (const a of parseRss(r.value, 15)) {
+      // Skip extra-feed articles older than 7 days to avoid serving stale content
+      if (freshnessScore(a.pubDate) < 30) continue
       const key = a.title.toLowerCase().slice(0, 40)
       if (!seen.has(key)) { seen.add(key); articles.push(a) }
     }
@@ -361,17 +372,26 @@ export async function GET(
   try {
     // Run all sources in parallel — custom query + generic backup + BBC + Reuters + country feeds
     const [googleArticles, googleGeneric, bbcArticles, reutersArticles, extraArticles] = await Promise.all([
-      fetchGoogleNews(customQuery),
-      fetchGoogleNews(`${name} economy GDP finance`),
+      fetchGoogleNews(customQuery, 3),
+      fetchGoogleNews(`${name} economy GDP finance`, 3),
       fetchRssFiltered('https://feeds.bbci.co.uk/news/business/rss.xml', name),
       fetchRssFiltered('https://feeds.reuters.com/reuters/businessNews', name),
       fetchExtraFeeds(code, name),
     ])
 
+    // If primary Google queries returned nothing recent, widen to 7 days as fallback
+    const googleFresh = [...googleArticles, ...googleGeneric].filter(a => freshnessScore(a.pubDate) >= 30)
+    const googleWidened = googleFresh.length === 0
+      ? await Promise.all([
+          fetchGoogleNews(customQuery, 7),
+          fetchGoogleNews(`${name} economy GDP finance`, 7),
+        ]).then(([a, b]) => [...a, ...b])
+      : []
+
     // Merge and deduplicate by title prefix (country feeds first for relevance)
     const seen = new Set<string>()
     const merged: NewsArticle[] = []
-    for (const a of [...extraArticles, ...googleArticles, ...googleGeneric, ...bbcArticles, ...reutersArticles]) {
+    for (const a of [...extraArticles, ...googleArticles, ...googleGeneric, ...googleWidened, ...bbcArticles, ...reutersArticles]) {
       const key = a.title.toLowerCase().slice(0, 40)
       if (!seen.has(key)) { seen.add(key); merged.push(a) }
     }
@@ -379,10 +399,13 @@ export async function GET(
     // Sort: freshness × 2.2 + source quality (combined score)
     const sorted = merged.sort((a, b) => combinedScore(b) - combinedScore(a))
 
-    // Only report unavailable if truly nothing exists (even within 30 days)
-    // score >= 2 means within ~30 days (scores: 10=1mo, 2=older-but-present)
-    const hasAnyContent = sorted.some(a => freshnessScore(a.pubDate) >= 2)
-    if (!hasAnyContent) {
+    // Tiered selection: prefer <72h, fall back to <7d max.
+    // We never show articles older than 7 days — show "No recent news" instead.
+    const within72h = sorted.filter(a => freshnessScore(a.pubDate) >= 58)
+    const within7d  = sorted.filter(a => freshnessScore(a.pubDate) >= 30)
+
+    // If nothing within 7 days exists, return noRecent — never show stale articles
+    if (within7d.length === 0) {
       return NextResponse.json({
         articles: [], country: name,
         fetchedAt: new Date().toISOString(),
@@ -390,22 +413,13 @@ export async function GET(
       })
     }
 
-    // Tiered selection: prefer <72h, fall back to <7d, then <30d, then whatever exists
-    const within72h  = sorted.filter(a => freshnessScore(a.pubDate) >= 58)
-    const within7d   = sorted.filter(a => freshnessScore(a.pubDate) >= 30)
-    const within30d  = sorted.filter(a => freshnessScore(a.pubDate) >= 10)
-    const articles   = (
-      within72h.length  >= 3 ? within72h  :
-      within7d.length   >= 3 ? within7d   :
-      within30d.length  >= 2 ? within30d  :
-      sorted
-    ).slice(0, 8)
+    const articles = (within72h.length >= 3 ? within72h : within7d).slice(0, 8)
 
     return NextResponse.json({
       articles, country: name,
       fetchedAt: new Date().toISOString(),
-      unavailable: articles.length === 0,
-      noRecent: within72h.length === 0 && within7d.length === 0,
+      unavailable: false,
+      noRecent: false,
     })
   } catch (err) {
     console.error('[news route]', err)

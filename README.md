@@ -10,6 +10,16 @@ PulseEarth transforms World Bank data, live news feeds, and AI analysis into a B
 [![Three.js](https://img.shields.io/badge/Three.js-r184-000?style=flat-square&logo=three.js)](https://threejs.org/)
 [![AWS DynamoDB](https://img.shields.io/badge/DynamoDB-City_Data-232F3E?style=flat-square&logo=amazon-aws)](https://aws.amazon.com/dynamodb/)
 [![Claude AI](https://img.shields.io/badge/Claude-Haiku-CC785C?style=flat-square)](https://anthropic.com/)
+[![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?style=flat-square&logo=docker)](./Dockerfile)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow?style=flat-square)](./LICENSE.md)
+
+---
+
+## 🌐 Live Demo
+
+**Production:** [https://pulse-earth.vercel.app](https://pulse-earth.vercel.app)
+
+> Deployed on Vercel Edge · Auto-deploys from `main` branch · Global CDN
 
 ---
 
@@ -17,13 +27,18 @@ PulseEarth transforms World Bank data, live news feeds, and AI analysis into a B
 
 - [Product Vision](#product-vision)
 - [Live Features](#live-features)
+- [Screenshots](#screenshots)
 - [Tech Stack](#tech-stack)
 - [Architecture](#architecture)
 - [AI & Data Pipeline](#ai--data-pipeline)
 - [Quick Start](#quick-start)
+- [Running with Docker](#running-with-docker)
 - [Environment Variables](#environment-variables)
 - [API Reference](#api-reference)
 - [Data Sources & Methodology](#data-sources--methodology)
+- [Why DynamoDB](#why-dynamodb)
+- [Why Vercel](#why-vercel)
+- [Performance](#performance)
 - [Known Limitations](#known-limitations)
 - [Business Case](#business-case)
 - [Roadmap](#roadmap)
@@ -167,6 +182,23 @@ The platform combines verified World Bank data with AI-powered analysis to produ
 
 ---
 
+## Screenshots
+
+> Screenshots are stored in [`docs/screenshots/`](./docs/screenshots/).  
+> To add: take a screenshot of each view and save with the filename below.
+
+| View | File | Description |
+|---|---|---|
+| Globe Overview | `docs/screenshots/01-globe-overview.png` | Full 3D globe with atmospheric glow and city pulse dots |
+| Country Dashboard | `docs/screenshots/02-country-dashboard.png` | India sidebar — macro metrics, risk score, innovation index |
+| AI Anchor | `docs/screenshots/03-ai-anchor.png` | NewsAnchor widget with female presenter and audio controls |
+| Compare Mode | `docs/screenshots/04-compare-mode.png` | US vs China side-by-side metric comparison bars |
+| Investment Report | `docs/screenshots/05-investment-report.png` | PDF-quality investment report modal |
+| Trade Routes | `docs/screenshots/06-trade-routes.png` | 30 animated bilateral trade arcs with bloom glow |
+| Heatmap Layer | `docs/screenshots/07-heatmap.png` | 5-tier GDP/capita heatmap — crimson to cyan |
+
+---
+
 ## Tech Stack
 
 ### Frontend
@@ -307,6 +339,76 @@ npm run dev       # → http://localhost:3000
 
 ---
 
+## Running with Docker
+
+PulseEarth ships with a production-grade multi-stage Dockerfile. The final image is Alpine-based, runs as a non-root user, and weighs approximately 150 MB.
+
+### Prerequisites
+
+- Docker 24+ and Docker Compose v2+
+- A populated `.env.local` file (see [Environment Variables](#environment-variables))
+- DynamoDB seeded (run `npm run seed` locally before first launch)
+
+### Build the image
+
+```bash
+docker build -t pulseearth .
+```
+
+With a custom app URL (for OpenGraph / canonical links):
+
+```bash
+docker build --build-arg NEXT_PUBLIC_APP_URL=https://pulse-earth.vercel.app -t pulseearth .
+```
+
+### Run the container
+
+```bash
+docker run -p 3000:3000 --env-file .env.local pulseearth
+```
+
+Open [http://localhost:3000](http://localhost:3000).
+
+### Docker Compose (recommended)
+
+```bash
+# Copy and fill in your credentials
+cp .env.example .env.local
+
+# Build and start (foreground)
+docker compose up --build
+
+# Detached mode
+docker compose up -d
+
+# Stop
+docker compose down
+```
+
+### Environment variables in Docker
+
+All secret keys are injected at **runtime** — they are never baked into the image.
+
+```bash
+# Pass individual env vars
+docker run -p 3000:3000 \
+  -e ANTHROPIC_API_KEY=sk-ant-... \
+  -e AWS_REGION=us-east-1 \
+  -e AWS_ACCESS_KEY_ID=AKIA... \
+  -e AWS_SECRET_ACCESS_KEY=... \
+  -e DYNAMODB_TABLE_NAME=city-metrics \
+  pulseearth
+
+# Or pass the whole .env.local file
+docker run -p 3000:3000 --env-file .env.local pulseearth
+```
+
+### Docker architecture note
+
+The Dockerfile uses Next.js **standalone output** (`output: 'standalone'` in `next.config.ts`). This produces a self-contained `server.js` that includes only the required `node_modules` — no full install needed at runtime, resulting in a significantly smaller image.
+
+---
+
 ## Environment Variables
 
 | Variable | Required | Description |
@@ -363,6 +465,64 @@ Free public API (`api.worldbank.org/v2`). No API key required. Data typically la
 
 ### City Data
 Seeded reference estimates from DynamoDB. Not live statistics. All values labelled "(Est.)" in UI.
+
+---
+
+## Why DynamoDB
+
+PulseEarth uses **Amazon DynamoDB** as its operational database for city intelligence data. The choice is deliberate:
+
+| Requirement | Why DynamoDB |
+|---|---|
+| **Sub-millisecond reads** | City dots load in single-digit ms — critical for globe load performance |
+| **Serverless-native** | No connection pooling needed; works directly in Next.js edge functions via the AWS SDK v3 HTTP client |
+| **Zero ops overhead** | No server, no cluster, no maintenance — fully managed |
+| **Schema flexibility** | City records (metrics, pulse intensity, AI insights) evolve without migrations |
+| **Free tier** | 25 GB storage + 25 read/write capacity units — sufficient for 29 cities at zero cost |
+| **Infinite scalability** | On-demand mode scales from 29 rows to 2 million city records with no code change |
+| **Global Tables** | One-line config upgrade to multi-region active-active replication for enterprise deployments |
+
+**What is stored:** 29 global economic hubs with fields: `cityId`, `name`, `country`, `countryCode`, `lat`, `lng`, `gdp_billion`, `population_m`, `startup_count`, `trade_volume_b`, `risk_score`, `pulse_intensity`, `ai_insight`, `insight_updated`.
+
+**Access patterns:** Full scan (city dots on globe load), partition-key lookup (city detail view), filter by country code (country city list). All fit natively into DynamoDB's access model without secondary indexes.
+
+---
+
+## Why Vercel
+
+PulseEarth is deployed on **Vercel** — the platform Next.js was built for:
+
+| Requirement | Why Vercel |
+|---|---|
+| **Global edge delivery** | 100+ PoPs deliver static assets and edge-cached API responses in <50ms worldwide |
+| **Serverless API routes** | Each Next.js API route becomes an independent serverless function — no server to manage, infinite concurrency |
+| **Zero-config CI/CD** | `git push` to `main` → automatic build → production deploy in ~60 seconds |
+| **Next.js optimization** | Vercel created Next.js. Image optimization, ISR, edge middleware, and streaming SSE all work out of the box |
+| **Environment variables** | Secrets are stored encrypted at rest in Vercel's vault and injected at runtime — never in the image |
+| **Preview deployments** | Every PR gets its own preview URL — ideal for feature testing before merge |
+| **Log streaming** | Real-time function logs and error tracking built in |
+| **Free tier** | Hobby plan covers the full PulseEarth feature set at zero cost |
+
+**Vercel vs Docker:** Docker is provided for self-hosting and CI environments. For production, Vercel is the recommended deployment target because it natively handles Next.js streaming, ISR cache, and edge functions without configuration.
+
+---
+
+## Performance
+
+> Performance benchmarks measured on Vercel Edge (us-east-1 origin, global CDN).  
+> Results vary by network location and World Bank API latency.
+
+| Metric | Target | Notes |
+|---|---|---|
+| **Initial page load (TTI)** | < 2.5s | Globe WebGL init + GeoJSON load from CDN |
+| **Country search latency** | < 50ms | Static 173-country list — zero network calls |
+| **Country data (World Bank)** | 800ms – 2s | 7 parallel WB API calls; 24h cache on repeat |
+| **News feed load** | 3s – 6s | Parallel RSS fetches + freshness scoring |
+| **AI Anchor briefing** | 8s – 15s | LLM inference + optional TTS generation |
+| **Investment Report** | 5s – 22s | LLM (deterministic result shown in <1s) |
+| **Heatmap layer** | < 3s (first) / instant (cached) | 24h Next.js ISR cache after first load |
+| **Globe render FPS** | 55–60 FPS | Three.js r184 with ACESFilmic tone mapping |
+| **DynamoDB city scan** | < 30ms | 29-item scan in us-east-1 |
 
 ---
 

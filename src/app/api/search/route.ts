@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server'
 import { getAllCityDots } from '@/lib/queries'
-import { getAllCountries } from '@/lib/restcountries'
+import { COUNTRIES_LIST, flagOf } from '@/data/countries-list'
 
-export const revalidate = 300
+// force-dynamic so query param changes aren't cached
+export const dynamic = 'force-dynamic'
 
 interface SearchResult {
   id: string
@@ -20,10 +21,8 @@ export async function GET(req: Request) {
   if (q.length < 2) return NextResponse.json({ results: [] })
 
   try {
-    const [countries, cities] = await Promise.all([
-      getAllCountries(),
-      getAllCityDots(),
-    ])
+    // Cities from DynamoDB — only network call needed
+    const cities = await getAllCityDots().catch(() => [])
 
     const results: SearchResult[] = []
     const seenIds = new Set<string>()
@@ -34,41 +33,42 @@ export async function GET(req: Request) {
       results.push(r)
     }
 
-    // 1. Countries matched by name
-    for (const c of countries) {
-      if (!c.code || !c.name) continue
+    // 1. Countries matched by name — instant from static list, no API call
+    for (const c of COUNTRIES_LIST) {
       if (c.name.toLowerCase().includes(q)) {
+        const flag = flagOf(c.code)
         push({
           id: c.code,
-          name: `${c.flag} ${c.name}`.trim(),
+          name: `${flag} ${c.name}`.trim(),
           subtitle: c.region,
           lat: c.lat,
           lng: c.lng,
           type: 'country',
           countryCode: c.code,
-          flag: c.flag,
+          flag,
         })
       }
     }
 
-    // 2. Capitals matched by name (always a unique id: 'cap:{code}')
-    for (const c of countries) {
-      if (!c.code || !c.capital) continue
+    // 2. Capitals matched by name — also instant from static list
+    for (const c of COUNTRIES_LIST) {
+      if (!c.capital) continue
       if (c.capital.toLowerCase().includes(q)) {
+        const flag = flagOf(c.code)
         push({
           id: `cap:${c.code}`,
-          name: `${c.flag} ${c.capital}`.trim(),
+          name: `${flag} ${c.capital}`.trim(),
           subtitle: `Capital · ${c.name}`,
           lat: c.lat,
           lng: c.lng,
           type: 'capital',
           countryCode: c.code,
-          flag: c.flag,
+          flag,
         })
       }
     }
 
-    // 3. DynamoDB cities
+    // 3. DynamoDB cities (29 entries, fast scan)
     for (const c of cities) {
       if (!c.cityId) continue
       if (c.name.toLowerCase().includes(q) || c.country.toLowerCase().includes(q)) {
@@ -83,7 +83,7 @@ export async function GET(req: Request) {
       }
     }
 
-    // Sort: exact name-start matches first, then by type priority
+    // Sort: exact start-matches first, then country > capital > city
     const typeOrder = { country: 0, capital: 1, city: 2 }
     results.sort((a, b) => {
       const clean = (s: string) => s.toLowerCase().replace(/^[^\w]+/, '')

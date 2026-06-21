@@ -1,0 +1,83 @@
+version: "3.9"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# PulseEarth — Docker Compose
+#
+# Usage:
+#   cp .env.example .env.local      # fill in your credentials
+#   docker compose up --build       # build + start
+#   docker compose up -d            # detached mode
+#   docker compose down             # stop
+#
+# Environment variables are loaded from .env.local automatically.
+# See .env.example for required variables.
+# ─────────────────────────────────────────────────────────────────────────────
+
+services:
+  pulseearth:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      # Pass public env vars as build args (non-secret only)
+      args:
+        NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-http://localhost:3000}
+
+    image: pulseearth:latest
+    container_name: pulseearth
+
+    ports:
+      - "3000:3000"
+
+    # Load all variables from .env.local at runtime
+    # Secret keys stay out of the image — they are injected here only
+    env_file:
+      - .env.local
+
+    # Override / add individual env vars if needed
+    environment:
+      NODE_ENV: production
+      PORT: "3000"
+      HOSTNAME: "0.0.0.0"
+
+    # Restart policy for production deployments
+    restart: unless-stopped
+
+    # Resource limits — adjust for your host
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: "1.0"
+        reservations:
+          memory: 256M
+          cpus: "0.25"
+
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+
+    # Structured JSON logging
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+# ── Optional: local DynamoDB (for offline development without AWS) ─────────────
+# Uncomment to use DynamoDB Local instead of AWS DynamoDB.
+# After starting, run: npm run seed (with AWS_ENDPOINT_URL set)
+#
+#  dynamodb-local:
+#    image: amazon/dynamodb-local:latest
+#    container_name: dynamodb-local
+#    ports:
+#      - "8000:8000"
+#    command: "-jar DynamoDBLocal.jar -sharedDb -inMemory"
+#    healthcheck:
+#      test: ["CMD", "curl", "-f", "http://localhost:8000/"]
+#      interval: 10s
+#      timeout: 5s
+#      retries: 3

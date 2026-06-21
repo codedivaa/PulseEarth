@@ -1,0 +1,79 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# PulseEarth — .dockerignore
+# Excludes everything that should not enter the Docker build context.
+# Keeps build context small and secrets out of the image.
+# ─────────────────────────────────────────────────────────────────────────────
+
+# ── Build output (rebuilt inside Docker) ─────────────────────────────────────
+.next
+out
+
+# ── Dependencies (reinstalled inside Docker) ──────────────────────────────────
+node_modules
+
+# ── Environment / Secrets — NEVER copy into the image ─────────────────────────
+.env
+.env.local
+.env.*.local
+.env.development
+.env.production
+
+# ── Git ───────────────────────────────────────────────────────────────────────
+.git
+.gitignore
+.gitattributes
+
+# ── Documentation (not needed at runtime) ────────────────────────────────────
+README.md
+ARCHITECTURE*.md
+CHANGELOG.md
+CONTRIBUTING.md
+DEPLOYMENT.md
+DEMO_SCRIPT.md
+PRODUCT_FAQ.md
+PROJECT_STRUCTURE.md
+ROADMAP.md
+DATA_METHODOLOGY.md
+REPOSITORY_AUDIT.md
+architecture.drawio.md
+LICENSE.md
+AGENTS.md
+CLAUDE.md
+docs/
+
+# ── Development tools ─────────────────────────────────────────────────────────
+.eslintrc*
+eslint.config*
+.prettierrc*
+*.log
+npm-debug.log*
+
+# ── TypeScript incremental build cache ────────────────────────────────────────
+tsconfig.tsbuildinfo
+*.tsbuildinfo
+
+# ── OS / Editor artifacts ────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# ── Docker files themselves (no recursion needed) ─────────────────────────────
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# ── Test / CI ────────────────────────────────────────────────────────────────
+coverage/
+.nyc_output/
+__tests__/
+*.test.ts
+*.spec.ts
+cypress/
+playwright/
+
+# ── Scripts (seed script not needed in production image) ─────────────────────
+# The seed script runs against an external DynamoDB — not inside the container
+scripts/
